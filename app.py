@@ -7,15 +7,13 @@ import os
 st.set_page_config(page_title="AI 批量去背縮放工具", layout="wide")
 
 st.title("🖼️ AI 批量去背 & 等比例縮放工具")
-st.markdown("正在載入 AI 模型，請稍候... (首次執行可能需要下載模型)")
+
 
 # Move heavy imports here
 try:
-    from rembg import remove, new_session
     from PIL import Image
-    st.success("模型載入完成！")
-except Exception as e:
-    st.error(f"載入模型失敗: {e}")
+except ImportError:
+    st.error("PIL 尚未安裝")
     st.stop()
 
 # --- 側邊欄設定 ---
@@ -25,14 +23,11 @@ model_type = "u2net" if "標準" in model_name else "u2netp"
 
 @st.cache_resource
 def get_model(model_name):
+    from rembg import new_session
     # 下載並快取模型 session
     return new_session(model_name)
 
-# 預先載入模型 (觸發下載)
-if 'model_loaded' not in st.session_state:
-    with st.spinner(f"正在載入 {model_type} 模型... (首次執行需下載)"):
-        get_model(model_type)
-    st.session_state.model_loaded = True
+
 
 
 st.markdown("上傳多張圖片，自動去背、裁切邊緣、並按比例縮放置中。")
@@ -62,6 +57,7 @@ if uploaded_files:
         
         # 2. 去背
         with st.spinner(f"正在處理第 {idx+1} 張..."):
+            from rembg import remove
             session = get_model(model_type)
             no_bg_img = remove(input_image, session=session)
         
