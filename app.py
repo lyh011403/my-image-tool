@@ -100,12 +100,13 @@ def get_model(model_name):
         status_placeholder = st.empty()
         with status_placeholder.status("正在初始化 AI 引擎...", expanded=True) as status:
             st.write("正在下載模型數據，請稍候...")
-            session = new_session(model_name)
+            # Force CPU usage to prevent hangs on some cloud environments
+            session = new_session(model_name, providers=['CPUExecutionProvider'])
             st.session_state.model_downloaded = True
             status.update(label="AI 引擎準備就緒", state="complete", expanded=False)
             return session
     else:
-        return new_session(model_name)
+        return new_session(model_name, providers=['CPUExecutionProvider'])
 
 # --- 檔案上傳 ---
 uploaded_files = st.file_uploader("", type=["png", "jpg", "jpeg", "webp"], accept_multiple_files=True, label_visibility="collapsed")
@@ -138,6 +139,7 @@ if uploaded_files:
                     
                     # 2. 去背 (Optional)
                     if use_rembg:
+                        # st.toast(f"正在去背: {uploaded_file.name}...", icon="🤖")
                         from rembg import remove
                         session = get_model(model_type)
                         current_img = remove(current_img, session=session)
