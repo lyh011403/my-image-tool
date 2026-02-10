@@ -23,9 +23,18 @@ model_type = "u2net" if "標準" in model_name else "u2netp"
 
 @st.cache_resource
 def get_model(model_name):
-    from rembg import new_session
     # 下載並快取模型 session
-    return new_session(model_name)
+    if 'model_downloaded' not in st.session_state:
+        with st.status("正在初始化 AI 模型...", expanded=True) as status:
+            st.write("正在下載輕量級模型 (u2netp)...")
+            from rembg import new_session
+            session = new_session(model_name)
+            st.session_state.model_downloaded = True
+            status.update(label="AI 模型準備就緒！", state="complete", expanded=False)
+            return session
+    else:
+        from rembg import new_session
+        return new_session(model_name)
 
 
 
@@ -58,8 +67,12 @@ if uploaded_files:
         # 2. 去背
         with st.spinner(f"正在處理第 {idx+1} 張..."):
             from rembg import remove
-            session = get_model(model_type)
-            no_bg_img = remove(input_image, session=session)
+            try:
+                session = get_model(model_type)
+                no_bg_img = remove(input_image, session=session)
+            except Exception as e:
+                st.error(f"處理失敗: {e}")
+                continue
         
         # 3. 偵測邊緣並裁切
         bbox = no_bg_img.getbbox()
