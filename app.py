@@ -20,7 +20,7 @@ except Exception as e:
 
 # --- 側邊欄設定 ---
 st.sidebar.header("⚙️ 參數設定")
-model_name = st.sidebar.selectbox("選擇 AI 模型", ["u2net (標準 - 效果較好)", "u2netp (輕量 - 速度快)"], index=0)
+model_name = st.sidebar.selectbox("選擇 AI 模型", ["u2net (標準 - 效果較好)", "u2netp (輕量 - 速度快)"], index=1)
 model_type = "u2net" if "標準" in model_name else "u2netp"
 
 @st.cache_resource
